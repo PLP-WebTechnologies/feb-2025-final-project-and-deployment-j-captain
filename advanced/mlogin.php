@@ -1,0 +1,329 @@
+<?php
+require '../includes/db.php';
+session_start();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    $email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
+    $password = $data['password'];
+
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND verified = 1");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user_email'] = $user['email'];
+            
+            // Send login notification
+            $loginTime = date('Y-m-d H:i:s');
+            $subject = "Successful Login Notification";
+            $message = "You logged in to Football Arena at $loginTime";
+            mail($user['email'], $subject, $message);
+
+            echo json_encode(['status' => 'success', 'message' => 'Login successful']);
+        } else {
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'Invalid credentials or account not verified']);
+        }
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['status' => 'error', 'message' => 'Database error']);
+    }
+} else {
+    http_response_code(405);
+    echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE FOOTBALL ARENA | Member Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1a237e;
+            --secondary-blue: #1976d2;
+            --accent: #ffc107;
+            --light: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        /* Enhanced Navbar Styles */
+        .navbar {
+            background: var(--primary-blue);
+            padding: 0.8rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            color: var(--light);
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logo i {
+            margin-right: 0.8rem;
+            color: var(--accent);
+            font-size: 1.8rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--light);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links a:hover {
+            background: var(--secondary-blue);
+            transform: translateY(-2px);
+        }
+
+        .accounts-btn {
+            background: var(--accent);
+            color: var(--primary-blue);
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .accounts-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .hamburger {
+            display: none;
+            color: var(--light);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Main Content Styles */
+        .main-login {
+            min-height: 100vh;
+            background: linear-gradient(rgba(26, 35, 126, 0.9), rgba(25, 118, 210, 0.9)),
+                        url('resources/images/stadium-bg.jpg') center/cover fixed;
+            padding: 2rem 0;
+        }
+
+        /* Login Container Styles */
+        .login-container {
+            max-width: 500px;
+            margin: 4rem auto;
+            padding: 3rem;
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Login Form Styles */
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header i {
+            font-size: 3rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 8px rgba(26, 35, 126, 0.3);
+        }
+
+        .login-btn {
+            background: var(--primary-blue);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background: var(--secondary-blue);
+            transform: translateY(-2px);
+        }
+
+        .login-links {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .login-links a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            margin: 0 0.5rem;
+            font-weight: 500;
+        }
+
+        .login-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--primary-blue);
+                flex-direction: column;
+                padding: 1rem;
+                text-align: center;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .login-container {
+                margin: 2rem 1rem;
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <i class="fas fa-futbol"></i>
+                FOOTBALL ARENA
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="../index.html"><i class="fas fa-home"></i>Home</a></li>
+                <li><a href="signup.php" class="accounts-btn"><i class="fas fa-user-plus"></i>Register</a></li>
+            </ul>
+
+            <div class="hamburger" id="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Content -->
+    <main class="main-login">
+        <div class="login-container">
+            <div class="login-header">
+                <i class="fas fa-sign-in-alt"></i>
+                <h2>Member Login</h2>
+                <p>Access your personalized football experience</p>
+            </div>
+
+            <form class="login-form">
+                <div class="form-group">
+                    <input type="email" placeholder="Email Address" required>
+                </div>
+
+                <div class="form-group">
+                    <input type="password" placeholder="Password" required>
+                </div>
+
+                <button type="submit" class="login-btn">Sign In <i class="fas fa-arrow-right"></i></button>
+
+                <div class="login-links">
+                    <a href="forgot-password.html">Forgot Password?</a>
+                    <a href="signup.php">Create Account</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer style="background: var(--primary-blue); color: white; padding: 2rem; text-align: center;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <p>&copy; 2025 Football Arena. All rights reserved.</p>
+            <div style="margin-top: 1rem;">
+                <a href="#" style="color: var(--accent); margin: 0 1rem; text-decoration: none;">Privacy Policy</a>
+                <a href="#" style="color: var(--accent); margin: 0 1rem; text-decoration: none;">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Menu Toggle
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.querySelector('.nav-links');
+
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

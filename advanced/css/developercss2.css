@@ -1,0 +1,199 @@
+
+:root {
+    --primary: #2c3e50;
+    --secondary: #3498db;
+    --accent: #e74c3c;
+    --light: #ecf0f1;
+    --dark: #2c3e50;
+}
+
+/* Animated Background */
+.developer-hero {
+    background: linear-gradient(135deg, rgba(44, 62, 80, 0.9), rgba(52, 152, 219, 0.9)),
+                url('assets/images/code-bg.jpg') center/cover;
+    height: 700px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.developer-hero::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.1) 50%);
+    background-size: 3px 3px;
+    animation: gridAnim 20s linear infinite;
+}
+
+@keyframes gridAnim {
+    0% { transform: translateY(0) rotate(45deg); }
+    100% { transform: translateY(-100px) rotate(45deg); }
+}
+
+/* Developer Profile Card */
+.developer-card {
+    background: rgba(255,255,255,0.95);
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    text-align: center;
+    transform: translateY(0);
+    animation: float 6s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+    transition: all 0.4s ease;
+}
+
+.developer-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+}
+
+.profile-image {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    margin: 0 auto 2rem;
+    position: relative;
+    border: 4px solid var(--secondary);
+    transition: all 0.4s ease;
+}
+
+.profile-image:hover {
+    transform: rotate(360deg);
+    border-color: var(--accent);
+}
+
+/* Skills Grid */
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin: 4rem 0;
+}
+
+.skill-card {
+    background: gold;
+    padding: 2rem;
+    border-radius: 15px;
+    transform: translateY(0);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    
+}
+
+.skill-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--secondary);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+}
+
+.skill-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.skill-card:hover::before {
+    transform: scaleX(1);
+}
+
+ 
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.timeline-item:nth-child(1) { animation-delay: 0.2s; }
+.timeline-item:nth-child(2) { animation-delay: 0.4s; }
+.timeline-item:nth-child(3) { animation-delay: 0.6s; }
+
+/* Hover Effects */
+.social-links a {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 0.5rem;
+    transition: all 0.3s ease;
+    background-color: #e74c3c;
+}
+
+.social-links a:hover {
+    transform: translateY(-5px) rotate(15deg);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Glowing Effect */
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 10px rgba(52, 152, 219, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(52, 152, 219, 0.8); }
+}
+
+.highlight {
+    animation: glow 2s infinite;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    display: inline-block;
+    margin: 1rem 0;
+}
+.footer-col h3 {
+color: var(--secondary);
+margin-bottom: 1.5rem;
+font-size: 1.2rem;
+}
+
+.footer-col ul {
+    list-style: none;
+}
+
+.footer-col li {
+    margin-bottom: 0.8rem;
+}
+
+.footer-col a {
+    color: #ddd;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer-col a:hover {
+    color: var(--secondary);
+}
+
+.social-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    transition: background 0.3s;
+}
+
+.social-links a:hover {
+    background: var(--secondary);
+}
+
+ 
